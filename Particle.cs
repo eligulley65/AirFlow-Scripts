@@ -11,46 +11,10 @@ public class Particle : MonoBehaviour
     private Node currentNode;
     private int numOfHops;
     private LineRenderer lineRendererPrefab;
+    private Vector3 start;
 
     public void StartSchmoovin()
     {
-        /* currently deprecated code
-        LineRenderer line = Instantiate(lineRendererPrefab, transform);
-        line.positionCount = 1;
-        for (int i = 0; i < 5; i++)
-        {
-            transform.position = currentNode.GetPosition();
-            RaycastHit hit;
-            if (line.positionCount > i)
-            {
-                line.SetPosition(i, transform.position);
-            }
-            Debug.Log(currentNode.GetVelocity().ToString("G") + ", " + transform.position.ToString("G"));
-            if (currentNode.GetVelocity() == Vector3.zero)
-            {
-                Debug.Log("died");
-                break;
-            }
-            if (Physics.Raycast(transform.position, currentNode.GetVelocity(), out hit, Mathf.Infinity, 0))
-            {
-                Debug.Log("fired");
-                if (hit.collider.gameObject)
-                {
-                    Debug.Log("hit something: " + hit.collider.gameObject.name);
-                }
-                if (hit.collider.gameObject.TryGetComponent<Node>(out Node node))
-                {
-                    if (node == currentNode){ 
-                        Debug.Log("why u hitting urself");
-                        continue; }
-                    line.positionCount++;
-                    currentNode = node;
-                    Debug.Log("hit that bitch");
-                }
-            }
-        }
-        //line.SetPosition(numOfHops - 1, transform.position);
-        */
         //Get a list of all nodes
         List<Node> nodes = FindObjectsOfType<Node>().ToList<Node>();
         LineRenderer line = Instantiate(lineRendererPrefab, transform);
@@ -62,10 +26,13 @@ public class Particle : MonoBehaviour
             Vector3 velocity = currentNode.GetVelocity();
             float minDistance = float.MaxValue;
             Node nextNode = null;
+            //currentNode.GetComponent<MeshRenderer>().enabled = true;
             foreach(Node node in nodes)
             {
                 if (currentNode == node) { continue; }
                 if (Mathf.Abs(Vector3.Distance(position, node.GetPosition())) >= minDistance){ continue; }
+                if (node.GetVelocity() == Vector3.zero){ continue; }
+                
                 Vector3 positionToCheck = node.GetPosition();
                 if (CanWeGetThere(position.x, positionToCheck.x, velocity.x) &&
                     CanWeGetThere(position.y, positionToCheck.y, velocity.y) &&
@@ -86,17 +53,26 @@ public class Particle : MonoBehaviour
             }
             if (nextNode)
             {
-                Debug.Log(position + " to " + nextNode.GetPosition());
+                //Debug.Log(position + " to " + nextNode.GetPosition());
                 line.positionCount++;
                 line.SetPosition(i+1, nextNode.GetPosition());
+                nodes.Remove(currentNode);
                 currentNode = nextNode;
             }
             else
             {
+                //Debug.Log("dies to removal: " + position + " " + i);
+                if (i > 50)
+                {
+                    Debug.Log("Got it! : " + start + " died at " + i);
+                }
+                else
+                {
+                    line.enabled = false;
+                }
                 break;
             }
         }
-        
     }
 
     private bool CanWeGetThere(float start, float end, float vel)
@@ -119,7 +95,10 @@ public class Particle : MonoBehaviour
         return (pLocation - start) / vel;
     }
 
-    public void SetNode(Node node){ currentNode = node; }
+    public void SetNode(Node node){ 
+        currentNode = node; 
+        start = currentNode.GetPosition();
+        }
     public void SetNumOfHops(int num){ numOfHops = num; }
     public void SetLine(LineRenderer line)
     {
