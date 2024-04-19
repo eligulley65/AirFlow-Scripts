@@ -12,11 +12,13 @@ public class Particle : MonoBehaviour
     private int numOfHops;
     private LineRenderer lineRendererPrefab;
     private Vector3 start;
+    private List<Node> nodesInPath;
 
-    public void StartSchmoovin()
+    public List<Node> StartSchmoovin(List<Node> nodes)
     {
         //Get a list of all nodes
-        List<Node> nodes = FindObjectsOfType<Node>().ToList<Node>();
+        //List<Node> nodes = FindObjectsOfType<Node>().ToList<Node>();
+        nodesInPath = new List<Node>();
         LineRenderer line = Instantiate(lineRendererPrefab, transform);
         line.positionCount = 1;
         line.SetPosition(0, currentNode.GetPosition());
@@ -58,21 +60,24 @@ public class Particle : MonoBehaviour
                 line.SetPosition(i+1, nextNode.GetPosition());
                 nodes.Remove(currentNode);
                 currentNode = nextNode;
+                nodesInPath.Add(currentNode);
             }
             else
             {
                 //Debug.Log("dies to removal: " + position + " " + i);
-                if (i > 50)
+                if (i > 110)
                 {
                     Debug.Log("Got it! : " + start + " died at " + i);
                 }
                 else
                 {
                     line.enabled = false;
+                    return null;
                 }
                 break;
             }
         }
+        return nodesInPath;
     }
 
     private bool CanWeGetThere(float start, float end, float vel)

@@ -49,7 +49,12 @@ public class ParticleManager : MonoBehaviour
             particle.SetNode(nodes[nodeIndex]);
             particle.SetNumOfHops(200);
             particle.SetLine(lineRendererPrefab);
-            particle.StartSchmoovin();
+            List<Node> nodesToRemove = particle.StartSchmoovin(nodes);
+            if (nodesToRemove == null) continue;
+            foreach (Node node in nodesToRemove)
+            {
+                nodes.Remove(node);
+            }
             //*/
         }
     }
